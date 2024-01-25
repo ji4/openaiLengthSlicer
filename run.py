@@ -1,7 +1,8 @@
 from openai import OpenAI
+from dotenv import dotenv_values
 
-# 在這裡輸入你的 OpenAI API 金鑰
-client = OpenAI(api_key='')
+config = dotenv_values('.env')
+client = OpenAI(api_key = config["API_KEY"])
 
 def translate_segment(segment, model="gpt-3.5-turbo-1106"):
     try:
