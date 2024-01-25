@@ -1,3 +1,5 @@
+import os
+import sys
 from openai import OpenAI
 from dotenv import dotenv_values
 
@@ -34,11 +36,6 @@ def split_text_smart(text, max_length=600):
 
     return chunks
 
-# 你的長文本在這裡
-long_text = '''
-
-'''
-
 # 分割長文本
 segments = split_text_smart(long_text)
 
@@ -52,4 +49,10 @@ for segment in segments:
         print(translated+'\n')
 
 # 組合翻譯後的文本
-translated_text = "\n".join(translated_segments)
+translated_text = "\n".join(translated_segments)inputFile = sys.argv[1]
+with open(inputFile, 'r') as f:
+    long_text = f.read()
+    
+folder_path = os.path.dirname(inputFile)
+
+## 分割長文本
