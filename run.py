@@ -50,6 +50,8 @@ for segment in segments:
 
 # 組合翻譯後的文本
 translated_text = "\n".join(translated_segments)inputFile = sys.argv[1]
+#Read file
+inputFile = sys.argv[1]
 with open(inputFile, 'r') as f:
     long_text = f.read()
     
