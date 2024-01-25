@@ -10,7 +10,8 @@ def translate_segment(segment, model="gpt-3.5-turbo-1106"):
         messages=[
             {"role": "system", "content": "You are a professional book translator. Please translate the following English text to Traditional Chinese without adding any extra content or summary."},
             {"role": "user", "content": f"Translate the following English text to Traditional Chinese:\n\n{segment}"}
-        ])
+        ],
+        echo=False)
         return response.choices[0].message.content
     except Exception as e:
         print("Error during translation:", e)
@@ -47,7 +48,8 @@ for segment in segments:
     translated = translate_segment(segment)
     if translated:
         translated_segments.append(translated)
+        print(segment+'\n')
+        print(translated+'\n')
 
 # 組合翻譯後的文本
 translated_text = "\n".join(translated_segments)
-print(translated_text)
