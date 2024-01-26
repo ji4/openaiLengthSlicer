@@ -52,22 +52,22 @@ def convert_output_filename(f_name, f_ext):
     return f_bilingual, f_translated
 
 def translate_segments(segments):
+    open(f'{folder_path}/{f_translated}', 'w').close()
+    if output_bilingual:
+        open(f'{folder_path}/{f_bilingual}', 'w').close()
+    
     for segment in segments:
-        translated = send_request(segment)
-    if translated:
         print(segment+'\n')
-        print(translated+'\n')
-        with open(f'{folder_path}/{f_translated}', 'w') as f:
-            f.write(translated)
-            f.write('\n')
-        if output_bilingual:
-            with open(f'{folder_path}/{f_bilingual}', 'w') as f:
-                f.write(segment +'\n'+ translated)
+        res_translated = send_request(segment)
+        if res_translated:
+            print(res_translated+'\n')
+            with open(f'{folder_path}/{f_translated}', 'a') as f:
+                f.write(res_translated)
                 f.write('\n')
-            
-def send_multiple_requests(command, segments):
-    # Translate every segment.
-    translate_segments(segments)
+            if output_bilingual:
+                with open(f'{folder_path}/{f_bilingual}', 'a') as f:
+                    f.write(segment +'\n'+ res_translated)
+                    f.write('\n')
 
 if __name__ == "__main__":
     #read file name, ext, and path
@@ -85,4 +85,4 @@ if __name__ == "__main__":
     # Split long text.
     segments = split_text_smart(long_text)
     
-    send_multiple_requests(command, segments)
+    translate_segments(segments)
