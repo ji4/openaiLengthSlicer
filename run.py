@@ -4,7 +4,8 @@ from openai import OpenAI
 from dotenv import dotenv_values
 
 output_lang = 'Traditional Chinese'
-command = f'You are a professional book translator. Please translate the following text to {output_lang} without adding any extra content or summary and without echo my question.:\n\n'
+output_bilingual = True
+command = f'Translate the following text to {output_lang} without adding any extra content or summary and without echo my question.:\n\n'
 
 suffix_bilingual = '_bilingual'
 suffix_translated = '_translated'
@@ -18,7 +19,7 @@ def send_request(content, model = "gpt-3.5-turbo-1106"):
             model=model,
             messages=[
                 {"role": "user", 
-                 "content": f'"""{content}"""'}]
+                 "content": f'{command}\n\n{content}'}]
         )
         return response.choices[0].message.content
     except Exception as e:
@@ -59,14 +60,12 @@ def translate_segments(segments):
         with open(f'{folder_path}/{f_translated}', 'w') as f:
             f.write(translated)
             f.write('\n')
-        with open(f'{folder_path}/{f_bilingual}', 'w') as f:
-            f.write(segment +'\n'+ translated)
-            f.write('\n')
+        if output_bilingual:
+            with open(f'{folder_path}/{f_bilingual}', 'w') as f:
+                f.write(segment +'\n'+ translated)
+                f.write('\n')
             
 def send_multiple_requests(command, segments):
-    #Send first request.
-    send_request(command)
-
     # Translate every segment.
     translate_segments(segments)
 
