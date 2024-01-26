@@ -12,7 +12,11 @@ command = f'Translate the following text to {output_lang} without adding any ext
 suffix_bilingual = '_bilingual'
 suffix_translated = '_translated'
 
-config = dotenv_values('.env')
+#Get absolute path of main program.
+main_folder = os.path.dirname(os.path.abspath(__file__))
+
+#Concatenate the absolute path and read the .env file.
+config = dotenv_values(os.path.join(main_folder, '.env'))
 client = OpenAI(api_key = config["API_KEY"])
 
 def send_request(content, model = "gpt-3.5-turbo-1106"):
