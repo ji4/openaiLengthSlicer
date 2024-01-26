@@ -5,7 +5,7 @@ from dotenv import dotenv_values
 
 output_lang = 'Traditional Chinese'
 output_bilingual = True
-command = f'Translate the following text to {output_lang} without adding any extra content or summary and without echo my question.:\n\n'
+command = f'Translate the following text to {output_lang} without adding any extra content or summary and without echo my question.'
 
 suffix_bilingual = '_bilingual'
 suffix_translated = '_translated'
@@ -19,7 +19,7 @@ def send_request(content, model = "gpt-3.5-turbo-1106"):
             model=model,
             messages=[
                 {"role": "user", 
-                 "content": f'{command}\n\n{content}'}]
+                 "content": f'{command}:\n\n{content}'}]
         )
         return response.choices[0].message.content
     except Exception as e:

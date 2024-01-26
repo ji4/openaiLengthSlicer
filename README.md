@@ -1,2 +1,5 @@
-`pip install python-dotenv`
-`python3 `
+```
+pip install tqdm
+pip install python-dotenv
+python3 
+```
