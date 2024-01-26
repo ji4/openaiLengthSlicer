@@ -3,9 +3,8 @@ import sys
 from openai import OpenAI
 from dotenv import dotenv_values
 
-input_lang = 'English'
 output_lang = 'Traditional Chinese'
-command = f'You are a professional book translator. Please translate the following {input_lang} text to {output_lang} without adding any extra content or summary.:\n\n'
+command = f'You are a professional book translator. Please translate the following text to {output_lang} without adding any extra content or summary and without echo my question.:\n\n'
 
 suffix_bilingual = '_bilingual'
 suffix_translated = '_translated'
