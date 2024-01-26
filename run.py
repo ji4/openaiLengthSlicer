@@ -62,8 +62,8 @@ def translate_segments(segments):
     if output_bilingual:
         open(f'{folder_path}/{f_bilingual}', 'w').close()
     
-    for segment in tqdm(segments, desc="Processing"):
-        print(segment+'\n')
+    for segment in tqdm(segments, desc="Processing", position=None, leave=True):
+        print(f'\n{segment}\n')
         res_translated = send_request(segment)
         if res_translated:
             print(res_translated+'\n')
