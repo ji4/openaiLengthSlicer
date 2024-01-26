@@ -3,19 +3,25 @@ import sys
 from openai import OpenAI
 from dotenv import dotenv_values
 
-config = dotenv_values('.env')
-client = OpenAI(api_key = config["API_KEY"])
+input_lang = 'English'
+output_lang = 'Traditional Chinese'
+command = f'You are a professional book translator. Please translate the following {input_lang} text to {output_lang} without adding any extra content or summary.:\n\n'
+
+model="gpt-3.5-turbo-1106"
 
 suffix_bilingual = '_bilingual'
 suffix_translated = '_translated'
 
-def translate_segment(segment, model="gpt-3.5-turbo-1106"):
+config = dotenv_values('.env')
+client = OpenAI(api_key = config["API_KEY"])
+
+def send_request(content, model):
     try:
         response = client.chat.completions.create(
             model=model,
             messages=[
                 {"role": "user", 
-                 "content": f"{segment}"}]
+                 "content": f'"""{content}"""'}]
         )
         return response.choices[0].message.content
     except Exception as e:
@@ -46,7 +52,27 @@ def convert_output_filename(f_name, f_ext):
     f_bilingual = concat_filename_ext(f_name, suffix_bilingual, f_ext)
     f_translated = concat_filename_ext(f_name, suffix_bilingual, f_ext)
     return f_bilingual, f_translated
-    
+
+def translate_segments(segments):
+    for segment in segments:
+        translated = send_request(segment)
+    if translated:
+        print(segment+'\n')
+        print(translated+'\n')
+        with open(f'{folder_path}/{f_translated}', 'w') as f:
+            f.write(translated)
+            f.write('\n')
+        with open(f'{folder_path}/{f_bilingual}', 'w') as f:
+            f.write(segment +'\n'+ translated)
+            f.write('\n')
+            
+def send_multiple_requests(command, segments):
+    #Send first request.
+    send_request(command)
+
+    # Translate every segment.
+    translate_segments(segments)
+
 if __name__ == "__main__":
     #read file name, ext, and path
     inputFile = sys.argv[1]
@@ -62,16 +88,5 @@ if __name__ == "__main__":
 
     # Split long text.
     segments = split_text_smart(long_text)
-
-    # Translate every segment.
-    for segment in segments:
-        translated = translate_segment(segment)
-        if translated:
-            print(segment+'\n')
-            print(translated+'\n')
-            with open(f'{folder_path}/{f_translated}', 'w') as f:
-                f.write(translated)
-                f.write('\n')
-            with open(f'{folder_path}/{f_bilingual}', 'w') as f:
-                f.write(segment +'\n'+ translated)
-                f.write('\n')
+    
+    send_multiple_requests(command, segments)
