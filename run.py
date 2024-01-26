@@ -7,15 +7,13 @@ input_lang = 'English'
 output_lang = 'Traditional Chinese'
 command = f'You are a professional book translator. Please translate the following {input_lang} text to {output_lang} without adding any extra content or summary.:\n\n'
 
-model="gpt-3.5-turbo-1106"
-
 suffix_bilingual = '_bilingual'
 suffix_translated = '_translated'
 
 config = dotenv_values('.env')
 client = OpenAI(api_key = config["API_KEY"])
 
-def send_request(content, model):
+def send_request(content, model = "gpt-3.5-turbo-1106"):
     try:
         response = client.chat.completions.create(
             model=model,
