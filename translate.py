@@ -4,6 +4,7 @@ import time
 from tqdm import tqdm
 from openai import OpenAI
 from dotenv import dotenv_values
+from modules.file_util import concat_filename_ext
 
 output_lang = 'Traditional Chinese'
 output_bilingual = True
@@ -13,10 +14,10 @@ suffix_bilingual = '_bilingual'
 suffix_translated = '_translated'
 
 #Get absolute path of main program.
-main_folder = os.path.dirname(os.path.abspath(__file__))
+main_program_path = os.path.dirname(os.path.abspath(__file__))
 
 #Concatenate the absolute path and read the .env file.
-config = dotenv_values(os.path.join(main_folder, '.env'))
+config = dotenv_values(os.path.join(main_program_path, '.env'))
 client = OpenAI(api_key = config["API_KEY"])
 
 def send_request(content, model = "gpt-3.5-turbo-1106"):
