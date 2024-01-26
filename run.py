@@ -1,5 +1,7 @@
 import os
 import sys
+import time
+from tqdm import tqdm
 from openai import OpenAI
 from dotenv import dotenv_values
 
@@ -56,18 +58,16 @@ def translate_segments(segments):
     if output_bilingual:
         open(f'{folder_path}/{f_bilingual}', 'w').close()
     
-    for segment in segments:
+    for segment in tqdm(segments, desc="Processing"):
         print(segment+'\n')
         res_translated = send_request(segment)
         if res_translated:
             print(res_translated+'\n')
             with open(f'{folder_path}/{f_translated}', 'a') as f:
-                f.write(res_translated)
-                f.write('\n')
+                f.write(f'{res_translated}\n')
             if output_bilingual:
                 with open(f'{folder_path}/{f_bilingual}', 'a') as f:
-                    f.write(segment +'\n'+ res_translated)
-                    f.write('\n')
+                    f.write(f'{segment}\n\n{res_translated}\n\n')
 
 if __name__ == "__main__":
     #read file name, ext, and path
