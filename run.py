@@ -48,7 +48,7 @@ def concat_filename_ext(f_name, suffix, f_ext):
 
 def convert_output_filename(f_name, f_ext):
     f_bilingual = concat_filename_ext(f_name, suffix_bilingual, f_ext)
-    f_translated = concat_filename_ext(f_name, suffix_bilingual, f_ext)
+    f_translated = concat_filename_ext(f_name, suffix_translated, f_ext)
     return f_bilingual, f_translated
 
 def translate_segments(segments):
