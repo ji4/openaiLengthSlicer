@@ -72,7 +72,7 @@ def translate_segments(segments):
                     f.write(f'{segment}\n\n{res_translated}\n\n')
 
 if __name__ == "__main__":
-    #read file name, ext, and path
+    #read input file name, ext, and path
     inputFile = sys.argv[1]
     file_name, file_extension = os.path.splitext(os.path.basename(inputFile))
     folder_path = os.path.dirname(inputFile)
