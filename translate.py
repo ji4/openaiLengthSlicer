@@ -1,7 +1,6 @@
 import os
 import sys
-import time
-from qdtm import tqdm
+from tqdm import tqdm
 from openai import OpenAI
 from dotenv import dotenv_values
 from modules.file_util import concat_filename_ext
