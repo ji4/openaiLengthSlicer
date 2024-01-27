@@ -30,7 +30,7 @@ def send_request(content, model="gpt-3.5-turbo-1106"):
                 {"role": "user",
                  "content": f'{content}'}]
         )
-        return response.choices[0].message.content
+        return response
     except Exception as e:
         print("Error during translation:", e)
         return None
@@ -38,7 +38,6 @@ def send_request(content, model="gpt-3.5-turbo-1106"):
 
 def split_text(command, input_text, max_tokens=4096):
     # 將文字按照換行、空白進行切割
-    # re.split(r'\n|\s|。|\.|？|?|！|!', input_text)
     sentences = [sentence.strip() for sentence in re.split(r'\n|\s', input_text) if sentence.strip()]
 
     # 初始化變數
@@ -57,6 +56,7 @@ def split_text(command, input_text, max_tokens=4096):
             current_chunk_tokens += sentence_tokens  # 將目前句子token累計至當前chunk的token
             if sentence == sentences[-1]:
                 chunks.append(current_chunk)  # 加入目前chunk至array
+                print(f'Request of the current paragraph (besides command, {command_tokens} tokens): {current_chunk_tokens} tokens.')
         else:
             print(f'sentence in else: {sentence}')
             chunks.append(current_chunk)  # 加入目前chunk至array
@@ -85,12 +85,28 @@ if __name__ == "__main__":
 
     # Convert output file name.
     f_output = concat_filename_ext(file_name, suffix, file_extension)
+    output_file_path = f'{folder_path}/{f_output}' # output path
 
     # 切割文字並顯示結果
     command, chunks = split_text(command, input_text)
-    print(f'chunks:\n{chunks}\n')
-    print(f'command: {command}')
+
+    # Init tokens used.
+    total_tokens = prompt_tokens = completion_tokens = 0
     for chunk in chunks:
         print(f'Processing paragraph:\n{" ".join(chunk).replace(command, "")}')
-        # res = send_request(str(chunk))
-        # print(res)
+        res = send_request(''.join(chunk))
+        if res:
+            total_tokens += res.usage.total_tokens
+            prompt_tokens += res.usage.prompt_tokens
+            completion_tokens += res.usage.completion_tokens
+
+            res_content = res.choices[0].message.content
+            print(f'Response of the current paragraph: {completion_tokens} tokens.')
+
+            print(f'Converted: {res_content}\n')
+            open(output_file_path, 'w').close()
+            with open(output_file_path, 'a') as f:
+                f.write(f'{res_content}\n\n')
+
+    print(f'Total tokens: {total_tokens}, Prompt Tokens: {prompt_tokens}, Completion Tokens: {completion_tokens}')
+
