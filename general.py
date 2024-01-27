@@ -1,9 +1,10 @@
 import os
 import sys
 import re
+import tiktoken
 from openai import OpenAI
 from dotenv import dotenv_values
-import tiktoken
+from tqdm import tqdm
 from modules.file_util import concat_filename_ext
 
 model_name = "gpt-3.5-turbo-1106"
@@ -48,13 +49,12 @@ def split_text(command, input_text, max_tokens=4096):
     current_chunk_tokens = command_tokens
 
     # 將句子按照模型的 token 上限進行分割
-    for i, sentence in enumerate(sentences):
+    for sentence in tqdm(sentences, desc="Processing", position=-1, leave=True):
         sentence_tokens = count_tokens(sentence, encoding_name)
 
         if current_chunk_tokens + sentence_tokens <= max_tokens:
             current_chunk.append(sentence)  # 將sentence塞進chunk
             current_chunk_tokens += sentence_tokens  # 將目前句子token累計至當前chunk的token
-            print(f'i: {i}, sentence: {sentence}')
             if sentence == sentences[-1]:
                 chunks.append(current_chunk)  # 加入目前chunk至array
         else:
@@ -62,7 +62,7 @@ def split_text(command, input_text, max_tokens=4096):
             chunks.append(current_chunk)  # 加入目前chunk至array
             current_chunk = [command + sentence]  # 將command與sentence存到新的一個chunk
             current_chunk_tokens = command_tokens + count_tokens(sentence, encoding_name)  # 當前chunk的token為command + 一個句子的token
-    return chunks
+    return command, chunks
 
 
 def count_tokens(string: str, encoding_name: str) -> int:
@@ -87,9 +87,10 @@ if __name__ == "__main__":
     f_output = concat_filename_ext(file_name, suffix, file_extension)
 
     # 切割文字並顯示結果
-    chunks = split_text(command, input_text)
+    command, chunks = split_text(command, input_text)
     print(f'chunks:\n{chunks}\n')
-
+    print(f'command: {command}')
     for chunk in chunks:
-        res = send_request(str(chunk))
-        print(res)
+        print(f'Processing paragraph:\n{"".join(chunk).replace(command, "")}')
+        # res = send_request(str(chunk))
+        # print(res)
