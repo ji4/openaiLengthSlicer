@@ -35,16 +35,16 @@ def send_request(content, model="gpt-3.5-turbo-1106"):
         return None
 
 
-def split_text(input_text, max_tokens=4096):
+def split_text(command, input_text, max_tokens=4096):
     # 將文字按照換行、空白進行切割
     # re.split(r'\n|\s|。|\.|？|?|！|!', input_text)
     sentences = [sentence.strip() for sentence in re.split(r'\n|\s', input_text) if sentence.strip()]
 
     # 初始化變數
-    # current_chunk_tokens = 0  # 每個chunk的token
-    current_chunk = []  # 累積到上限要送出去的sentences
-    chunks = []  # 分次送出去的所有chunk
-    command_tokens = count_tokens(f'{command}:\n\n', encoding_name)
+    chunks = []
+    command += ':\n\n'
+    current_chunk = [command] # 分次送出去的所有chunk
+    command_tokens = count_tokens(command, encoding_name)
     current_chunk_tokens = command_tokens
 
     # 將句子按照模型的 token 上限進行分割
@@ -60,8 +60,8 @@ def split_text(input_text, max_tokens=4096):
         else:
             print(f'sentence in else: {sentence}')
             chunks.append(current_chunk)  # 加入目前chunk至array
-            current_chunk = [sentence]  # 將sentence存到新的一個chunk
-            current_chunk_tokens = count_tokens(sentence, encoding_name)  # 當前chunk的token為一個句子的token
+            current_chunk = [command + sentence]  # 將command與sentence存到新的一個chunk
+            current_chunk_tokens = command_tokens + count_tokens(sentence, encoding_name)  # 當前chunk的token為command + 一個句子的token
     return chunks
 
 
@@ -87,8 +87,9 @@ if __name__ == "__main__":
     f_output = concat_filename_ext(file_name, suffix, file_extension)
 
     # 切割文字並顯示結果
-    chunks = split_text(input_text)
+    chunks = split_text(command, input_text)
+    print(f'chunks:\n{chunks}\n')
 
     for chunk in chunks:
-        res = send_request(chunk)
+        res = send_request(str(chunk))
         print(res)
