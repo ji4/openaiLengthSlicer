@@ -9,7 +9,12 @@ from modules.file_util import concat_filename_ext
 
 model_name = "gpt-3.5-turbo-1106"
 encoding_name = "cl100k_base"
+# max_tokens = 4096 - 500 # output的字元加上標點符號比input多
+max_tokens = 100 # output的字元加上標點符號比input多
+
 suffix = '_output'
+command_file_name = 'command_for_general.txt'
+
 
 # Get absolute path of main program.
 main_program_path = os.path.dirname(os.path.abspath(__file__))
@@ -19,10 +24,10 @@ config = dotenv_values(os.path.join(main_program_path, '.env'))
 client = OpenAI(api_key=config["API_KEY"])
 
 # Get prompt path.
-prompt_path = os.path.join(main_program_path, 'prompt_for_general.txt')
+prompt_path = os.path.join(main_program_path, command_file_name)
 
 
-def send_request(content, model="gpt-3.5-turbo-1106"):
+def send_request(content, model=model_name):
     try:
         response = client.chat.completions.create(
             model=model,
@@ -32,23 +37,21 @@ def send_request(content, model="gpt-3.5-turbo-1106"):
         )
         return response
     except Exception as e:
-        print("Error during translation:", e)
+        print("Error during conversation:", e)
         return None
 
 
-def split_text(command, input_text, max_tokens=4096):
-    # 將文字按照換行、空白進行切割
+def split_text(input_text):
+    # 將文字按照換行、空白進行切割。
     sentences = [sentence.strip() for sentence in re.split(r'\n|\s', input_text) if sentence.strip()]
 
     # 初始化變數
     chunks = []
-    command += ':\n\n'
     current_chunk = [command] # 分次送出去的所有chunk
-    command_tokens = count_tokens(command, encoding_name)
     current_chunk_tokens = command_tokens
 
     # 將句子按照模型的 token 上限進行分割
-    for sentence in tqdm(sentences, desc="Processing", position=-1, leave=True):
+    for sentence in sentences:
         sentence_tokens = count_tokens(sentence, encoding_name)
 
         if current_chunk_tokens + sentence_tokens <= max_tokens:
@@ -56,13 +59,15 @@ def split_text(command, input_text, max_tokens=4096):
             current_chunk_tokens += sentence_tokens  # 將目前句子token累計至當前chunk的token
             if sentence == sentences[-1]:
                 chunks.append(current_chunk)  # 加入目前chunk至array
-                print(f'Request of the current paragraph (besides command, {command_tokens} tokens): {current_chunk_tokens} tokens.')
         else:
             print(f'sentence in else: {sentence}')
-            chunks.append(current_chunk)  # 加入目前chunk至array
-            current_chunk = [command + sentence]  # 將command與sentence存到新的一個chunk
-            current_chunk_tokens = command_tokens + count_tokens(sentence, encoding_name)  # 當前chunk的token為command + 一個句子的token
-    return command, chunks
+            chunks.append(current_chunk)
+            # Empty current chunk for new storage.
+            current_chunk = [command, sentence]
+
+            # 當前chunk的token為command + 一個句子的token
+            current_chunk_tokens = command_tokens + count_tokens(sentence, encoding_name)
+    return chunks
 
 
 def count_tokens(string: str, encoding_name: str) -> int:
@@ -78,12 +83,15 @@ def calculate_used_tokens(total_tokens, prompt_tokens, completion_tokens):
     return total_tokens, prompt_tokens, completion_tokens
 
 
-def convert_prompt():
-    # Init tokens used.
-    total_tokens = prompt_tokens = completion_tokens = 0
-
-    for chunk in chunks:
+def convert_prompt(chunks):
+    for chunk in tqdm(chunks, desc="Processing", position=-1, leave=True):
         print(f'Processing paragraph:\n{" ".join(chunk).replace(command, "")}')
+
+        text_tokens = count_tokens(''.join(chunk).replace(command, ''), encoding_name)
+        print(f'Request of the current paragraph (contains command, {command_tokens} tokens): {text_tokens} tokens.')
+        # Init tokens used.
+        total_tokens = prompt_tokens = completion_tokens = 0
+
         res = send_request(''.join(chunk))
         if res:
             total_tokens, prompt_tokens, completion_tokens = calculate_used_tokens(res.usage.total_tokens,
@@ -100,6 +108,8 @@ def convert_prompt():
 
     print(f'Total tokens: {total_tokens}, Prompt Tokens: {prompt_tokens}, Completion Tokens: {completion_tokens}')
 
+def contain_english(text):
+    return bool(re.search('[a-zA-Z]', text))
 
 if __name__ == "__main__":
     # read input file name, ext, and path
@@ -117,10 +127,14 @@ if __name__ == "__main__":
     f_output = concat_filename_ext(file_name, suffix, file_extension)
     output_file_path = f'{folder_path}/{f_output}' # output path
 
+    # Count command tokens
+    command += ':\n\n'
+    command_tokens = count_tokens(command, encoding_name)
+
     # 切割文字
-    command, chunks = split_text(command, input_text)
+    chunks = split_text(input_text)
 
     # Convert prompt
-    convert_prompt()
+    convert_prompt(chunks)
 
 
