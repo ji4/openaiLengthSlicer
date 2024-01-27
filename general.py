@@ -77,6 +77,30 @@ def calculate_used_tokens(total_tokens, prompt_tokens, completion_tokens):
     completion_tokens += completion_tokens
     return total_tokens, prompt_tokens, completion_tokens
 
+
+def convert_prompt():
+    # Init tokens used.
+    total_tokens = prompt_tokens = completion_tokens = 0
+
+    for chunk in chunks:
+        print(f'Processing paragraph:\n{" ".join(chunk).replace(command, "")}')
+        res = send_request(''.join(chunk))
+        if res:
+            total_tokens, prompt_tokens, completion_tokens = calculate_used_tokens(res.usage.total_tokens,
+                                                                                   res.usage.prompt_tokens,
+                                                                                   res.usage.completion_tokens)
+            res_content = res.choices[0].message.content
+
+            print(f'Response of the current paragraph: {completion_tokens} tokens.')
+            print(f'Converted: {res_content}\n')
+
+            open(output_file_path, 'w').close()
+            with open(output_file_path, 'a') as f:
+                f.write(f'{res_content}\n\n')
+
+    print(f'Total tokens: {total_tokens}, Prompt Tokens: {prompt_tokens}, Completion Tokens: {completion_tokens}')
+
+
 if __name__ == "__main__":
     # read input file name, ext, and path
     inputFile = sys.argv[1]
@@ -93,24 +117,9 @@ if __name__ == "__main__":
     f_output = concat_filename_ext(file_name, suffix, file_extension)
     output_file_path = f'{folder_path}/{f_output}' # output path
 
-    # 切割文字並顯示結果
+    # 切割文字
     command, chunks = split_text(command, input_text)
 
-    # Init tokens used.
-    total_tokens = prompt_tokens = completion_tokens = 0
-    for chunk in chunks:
-        print(f'Processing paragraph:\n{" ".join(chunk).replace(command, "")}')
-        res = send_request(''.join(chunk))
-        if res:
-            total_tokens, prompt_tokens, completion_tokens = calculate_used_tokens(res.usage.total_tokens, res.usage.prompt_tokens, res.usage.completion_tokens)
-            res_content = res.choices[0].message.content
+    convert_prompt()
 
-            print(f'Response of the current paragraph: {completion_tokens} tokens.')
-            print(f'Converted: {res_content}\n')
-
-            open(output_file_path, 'w').close()
-            with open(output_file_path, 'a') as f:
-                f.write(f'{res_content}\n\n')
-
-    print(f'Total tokens: {total_tokens}, Prompt Tokens: {prompt_tokens}, Completion Tokens: {completion_tokens}')
 
