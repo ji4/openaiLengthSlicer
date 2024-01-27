@@ -27,7 +27,7 @@ def send_request(content, model="gpt-3.5-turbo-1106"):
             model=model,
             messages=[
                 {"role": "user",
-                 "content": f'{chunk}'}]
+                 "content": f'{content}'}]
         )
         return response.choices[0].message.content
     except Exception as e:
@@ -41,23 +41,25 @@ def split_text(input_text, max_tokens=4096):
     sentences = [sentence.strip() for sentence in re.split(r'\n|\s', input_text) if sentence.strip()]
 
     # 初始化變數
-    chunk_tokens = 0  # 每個chunk的token
+    # current_chunk_tokens = 0  # 每個chunk的token
     current_chunk = []  # 累積到上限要送出去的sentences
     chunks = []  # 分次送出去的
+    command_tokens = count_tokens(f'{command}:\n\n', encoding_name)
+    current_chunk_tokens = command_tokens
 
     # 將句子按照模型的 token 上限進行分割
-    for sentence in sentences:
-        current_tokens = count_tokens(sentence, encoding_name)
+    for i, sentence in enumerate(sentences):
+        sentence_tokens = count_tokens(sentence, encoding_name)
 
-        chunk_tokens = count_tokens(f'{command}:\n\n', encoding_name) + count_tokens("".join(current_chunk),
-                                                                                     encoding_name)
-        if chunk_tokens + current_tokens <= max_tokens:
+        if current_chunk_tokens + sentence_tokens <= max_tokens:
             current_chunk.append(sentence)  # 將sentence塞進chunk
-            chunk_tokens += current_tokens  # 將目前句子token累計至當前chunk的token
+            current_chunk_tokens += sentence_tokens  # 將目前句子token累計至當前chunk的token
+            print(f'i: {i}, sentence: {sentence}')
         else:
+            print(f'sentence in else: {sentence}')
             chunks.append(current_chunk)  # 加入目前chunk至array
             current_chunk = [sentence]  # 將sentence存到新的一個chunk
-            chunk_tokens = count_tokens(sentence, encoding_name)  # 當前chunk的token為一個句子的token
+            current_chunk_tokens = count_tokens(sentence, encoding_name)  # 當前chunk的token為一個句子的token
     return chunks
 
 

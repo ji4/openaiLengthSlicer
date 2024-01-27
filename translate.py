@@ -35,9 +35,6 @@ def send_request(content, model="gpt-3.5-turbo-1106"):
         print("Error during translation:", e)
         return None
 
-
-
-
 def convert_output_filename(f_name, f_ext):
     f_bilingual = concat_filename_ext(f_name, suffix_bilingual, f_ext)
     f_translated = concat_filename_ext(f_name, suffix_translated, f_ext)
