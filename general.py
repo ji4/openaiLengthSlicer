@@ -120,6 +120,7 @@ if __name__ == "__main__":
     # 切割文字
     command, chunks = split_text(command, input_text)
 
+    # Convert prompt
     convert_prompt()
 
 
