@@ -91,6 +91,6 @@ if __name__ == "__main__":
     print(f'chunks:\n{chunks}\n')
     print(f'command: {command}')
     for chunk in chunks:
-        print(f'Processing paragraph:\n{"".join(chunk).replace(command, "")}')
+        print(f'Processing paragraph:\n{" ".join(chunk).replace(command, "")}')
         # res = send_request(str(chunk))
         # print(res)
