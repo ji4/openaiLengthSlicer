@@ -43,7 +43,7 @@ def split_text(input_text, max_tokens=4096):
     # 初始化變數
     # current_chunk_tokens = 0  # 每個chunk的token
     current_chunk = []  # 累積到上限要送出去的sentences
-    chunks = []  # 分次送出去的
+    chunks = []  # 分次送出去的所有chunk
     command_tokens = count_tokens(f'{command}:\n\n', encoding_name)
     current_chunk_tokens = command_tokens
 
@@ -55,6 +55,8 @@ def split_text(input_text, max_tokens=4096):
             current_chunk.append(sentence)  # 將sentence塞進chunk
             current_chunk_tokens += sentence_tokens  # 將目前句子token累計至當前chunk的token
             print(f'i: {i}, sentence: {sentence}')
+            if sentence == sentences[-1]:
+                chunks.append(current_chunk)  # 加入目前chunk至array
         else:
             print(f'sentence in else: {sentence}')
             chunks.append(current_chunk)  # 加入目前chunk至array
