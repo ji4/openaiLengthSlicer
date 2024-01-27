@@ -71,6 +71,12 @@ def count_tokens(string: str, encoding_name: str) -> int:
     return num_tokens
 
 
+def calculate_used_tokens(total_tokens, prompt_tokens, completion_tokens):
+    total_tokens += total_tokens
+    prompt_tokens += prompt_tokens
+    completion_tokens += completion_tokens
+    return total_tokens, prompt_tokens, completion_tokens
+
 if __name__ == "__main__":
     # read input file name, ext, and path
     inputFile = sys.argv[1]
@@ -96,14 +102,12 @@ if __name__ == "__main__":
         print(f'Processing paragraph:\n{" ".join(chunk).replace(command, "")}')
         res = send_request(''.join(chunk))
         if res:
-            total_tokens += res.usage.total_tokens
-            prompt_tokens += res.usage.prompt_tokens
-            completion_tokens += res.usage.completion_tokens
-
+            total_tokens, prompt_tokens, completion_tokens = calculate_used_tokens(res.usage.total_tokens, res.usage.prompt_tokens, res.usage.completion_tokens)
             res_content = res.choices[0].message.content
-            print(f'Response of the current paragraph: {completion_tokens} tokens.')
 
+            print(f'Response of the current paragraph: {completion_tokens} tokens.')
             print(f'Converted: {res_content}\n')
+
             open(output_file_path, 'w').close()
             with open(output_file_path, 'a') as f:
                 f.write(f'{res_content}\n\n')
