@@ -90,11 +90,6 @@ def count_tokens(string: str, encoding_name: str) -> int:
 
 def write_res_to_file(res, cur_chunk_tokens):
     if res:
-        # cur_chunk_total_tokens = cur_chunk__prompt_token = cur_chunks_completion_tokens = 0
-        # chunks_tokens.total_tokens, chunks_tokens.prompt_tokens, chunks_tokens.completion_tokens = add_sum_used_tokens(
-        #     res.usage.total_tokens,
-        #     res.usage.prompt_tokens,
-        #     res.usage.completion_tokens)
         res_content = res.choices[0].message.content
         cur_chunk_tokens.completion_tokens = res.usage.completion_tokens
 
@@ -106,19 +101,22 @@ def write_res_to_file(res, cur_chunk_tokens):
         return cur_chunk_tokens
 
 
+def init_cur_chunk_token_usage(chunk):
+    cur_chunk_tokens = Token()
+    cur_chunk_tokens.text_tokens = count_tokens(''.join(chunk).replace(command, ''), encoding_name)
+    cur_chunk_tokens.command_tokens = command_tokens
+    cur_chunk_tokens.prompt_tokens = command_tokens + cur_chunk_tokens.text_tokens
+
+    return cur_chunk_tokens
+
+
 def convert_prompt(chunks):
     open(output_file_path, 'w').close()
     sum_chunks_tokens = Token()
 
     for chunk in tqdm(chunks, desc="Processing", position=-1, leave=True):
         print(f'\nProcessing paragraph: {" ".join(chunk).replace(command, "")}')
-
-        # Init tokens used.
-        cur_chunk_tokens = Token()
-        cur_chunk_tokens.text_tokens = count_tokens(''.join(chunk).replace(command, ''), encoding_name)
-        cur_chunk_tokens.command_tokens = command_tokens
-        cur_chunk_tokens.prompt_tokens = command_tokens + cur_chunk_tokens.text_tokens
-
+        cur_chunk_tokens = init_cur_chunk_token_usage(chunk)
         print(f'Request of the current paragraph (contains command, {cur_chunk_tokens.command_tokens} tokens): {cur_chunk_tokens.prompt_tokens} tokens.')
 
         res = send_request(''.join(chunk))
