@@ -18,7 +18,6 @@ max_prompt_tokens = 800
 suffix = '_output'
 command_file_name = 'command_for_general.txt'
 
-
 # Get absolute path of main program.
 main_program_path = os.path.dirname(os.path.abspath(__file__))
 
@@ -43,11 +42,13 @@ def send_request(content, model=model_name):
         print("Error during conversation:", e)
         return None
 
+
 def add_space_for_two_eng_words(i, sentence, sentences):
     if i != 0:
         if contain_english(sentence) and contain_english(sentences[-1]):
             sentence += ' '
     return sentence
+
 
 def split_text(input_text):
     # 將文字按照換行、空白進行切割。
@@ -55,7 +56,7 @@ def split_text(input_text):
 
     # 初始化變數
     chunks = []
-    current_chunk = [command] # 分次送出去的所有chunk
+    current_chunk = [command]  # 分次送出去的所有chunk
     current_chunk_tokens = command_tokens
 
     # 將句子按照模型的 token 上限進行分割
@@ -79,16 +80,19 @@ def split_text(input_text):
             current_chunk_tokens = command_tokens + count_tokens(sentence, encoding_name)
     return chunks
 
+
 def count_tokens(string: str, encoding_name: str) -> int:
     encoding = tiktoken.get_encoding(encoding_name)
     num_tokens = len(encoding.encode(string))
     return num_tokens
+
 
 def calculate_used_tokens(total_tokens, prompt_tokens, completion_tokens):
     total_tokens += total_tokens
     prompt_tokens += prompt_tokens
     completion_tokens += completion_tokens
     return total_tokens, prompt_tokens, completion_tokens
+
 
 def convert_prompt(chunks):
     open(output_file_path, 'w').close()
@@ -97,7 +101,8 @@ def convert_prompt(chunks):
         print(f'\nProcessing paragraph:\n{" ".join(chunk).replace(command, "")}')
 
         text_tokens = count_tokens(''.join(chunk).replace(command, ''), encoding_name)
-        print(f'Request of the current paragraph (contains command, {command_tokens} tokens): {command_tokens + text_tokens} tokens.')
+        print(
+            f'Request of the current paragraph (contains command, {command_tokens} tokens): {command_tokens + text_tokens} tokens.')
         # Init tokens used.
         total_tokens = prompt_tokens = completion_tokens = 0
 
@@ -116,8 +121,10 @@ def convert_prompt(chunks):
 
     print(f'Total tokens: {total_tokens}, Prompt Tokens: {prompt_tokens}, Completion Tokens: {completion_tokens}')
 
+
 def contain_english(text):
     return bool(re.search('[a-zA-Z]', text))
+
 
 if __name__ == "__main__":
     # read input file name, ext, and path
@@ -133,7 +140,7 @@ if __name__ == "__main__":
 
     # Convert output file name.
     f_output = concat_filename_ext(file_name, suffix, file_extension)
-    output_file_path = f'{folder_path}/{f_output}' # output path
+    output_file_path = f'{folder_path}/{f_output}'  # output path
 
     # Count command tokens
     command += ':\n\n'
@@ -144,5 +151,3 @@ if __name__ == "__main__":
 
     # Convert prompt
     convert_prompt(chunks)
-
-
