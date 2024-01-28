@@ -36,4 +36,4 @@ class Token:
             f'Total Cost: ${round(total_cost, self.ndigits)}, '
             f'Prompt Cost: ${round(prompt_cost, self.ndigits)}, '
             f'Completion Cost: ${round(completion_cost, self.ndigits)} '
-            f'NT dollars (USD:TWD=1:30)')
+            f'NT dollars (USD:TWD = 1:30)')

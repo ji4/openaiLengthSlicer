@@ -102,11 +102,11 @@ def write_res_to_file(res, cur_chunk_tokens):
         cur_chunk_tokens.total_tokens = res.usage.total_tokens
         cur_chunk_tokens.prompt_tokens = res.usage.prompt_tokens
 
-        tqdm.write(f'\nActual Request of the current paragraph: {cur_chunk_tokens.prompt_tokens} tokens.\n ')
+        tqdm.write(f'Actual Request of the current paragraph: {cur_chunk_tokens.prompt_tokens} tokens.')
         print_full_line('.')
-        tqdm.write(f'{Color.BLUE}[Response of the of paragraph]{Color.RESET}\n'
+        tqdm.write(f'{Color.BG_GREY}{Color.BLACK}[Response of the of paragraph]{Color.RESET}\n'
                    f'{cur_chunk_tokens.completion_tokens} tokens.')
-        tqdm.write(f'Converted: {Color.GREEN}{res_content}{Color.RESET}\n')
+        tqdm.write(f'{Color.BG_BLACK}Converted: {Color.GREEN}{res_content}{Color.RESET}')
         print_full_line('.')
 
         with open(output_file_path, 'a') as f:
@@ -132,15 +132,15 @@ def convert_prompt(chunks):
         for chunk in tqdm(chunks, desc="Processing"):
             cur_chunk_tokens = init_cur_chunk_token_usage(chunk)
             tqdm.write(
-                f'{Color.BLUE}[Request of the current paragraph]{Color.RESET}\n'
-                f'prompt(roughly estimated): {cur_chunk_tokens.prompt_tokens} tokens\n(command: {cur_chunk_tokens.command_tokens} tokens , text: {cur_chunk_tokens.text_tokens} tokens, others: {cur_chunk_tokens.prompt_tokens - cur_chunk_tokens.command_tokens - cur_chunk_tokens.text_tokens} tokens.\n')
-            tqdm.write(f'Processing paragraph: {Color.GREEN}{" ".join(chunk).replace(command, "")}{Color.RESET}')
+                f'\n{Color.BG_GREY}{Color.BLACK}[Request of the current paragraph]{Color.RESET}\n'
+                f'prompt (roughly estimated): {cur_chunk_tokens.prompt_tokens} tokens\n(command: {cur_chunk_tokens.command_tokens} tokens , text: {cur_chunk_tokens.text_tokens} tokens, others: {cur_chunk_tokens.prompt_tokens - cur_chunk_tokens.command_tokens - cur_chunk_tokens.text_tokens} tokens.\n')
+            tqdm.write(f'Processing paragraph: {Color.BG_BLACK}{Color.YELLOW}{" ".join(chunk).replace(command, "")}{Color.RESET}')
 
             res = send_request(''.join(chunk))
             cur_chunk_tokens = write_res_to_file(res, cur_chunk_tokens)
             sum_chunks_tokens.add_sum(cur_chunk_tokens)
 
-            tqdm.write(f'{Color.BLUE}[Accumulated Usage So Far]{Color.RESET}')
+            tqdm.write(f'{Color.BG_GREY}{Color.BLACK}[Accumulated Usage So Far]{Color.RESET}')
             sum_chunks_tokens.print_token_usage()
             sum_chunks_tokens.print_cost()
             tqdm.write('\n')
@@ -155,11 +155,12 @@ def convert_prompt(chunks):
         tqdm.write("Conversion completed successfully!\n")
     finally:
         print_full_line('=')
-        tqdm.write('[Sum Usage]')
+        tqdm.write(f'{Color.BG_GREY}{Color.BLACK}[Sum Usage]{Color.RESET}')
 
         sum_chunks_tokens.print_token_usage()
-        tqdm.write(sum_chunks_tokens.print_cost())
+        sum_chunks_tokens.print_cost()
         tqdm.write(f'Output file: {output_file_path}')
+        print_full_line('=')
 
 
 def contain_english(text):
