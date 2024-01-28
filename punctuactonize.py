@@ -15,8 +15,8 @@ encoding_name = "cl100k_base"
 system_content = 'You are a professional stenographer.'
 
 # max_tokens = 4096
-# room_for_punctuation = 500
-# max_prompt_tokens = max_tokens - room_for_punctuation
+# room_for_punctuation = 300
+# max_prompt_tokens = max_tokens/2 - room_for_punctuation
 max_tokens = 100
 max_prompt_tokens = max_tokens * 0.8
 
