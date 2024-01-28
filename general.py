@@ -6,14 +6,15 @@ from openai import OpenAI
 from dotenv import dotenv_values
 from tqdm import tqdm
 from modules.file_util import concat_filename_ext
+from modules.token_usage import Token
 
 model_name = "gpt-3.5-turbo-1106"
 encoding_name = "cl100k_base"
 # max_tokens = 4096
 # room_for_punctuation = 500
 # max_prompt_tokens = max_tokens - room_for_punctuation
-max_tokens = 1000
-max_prompt_tokens = 800
+max_tokens = 100
+max_prompt_tokens = max_tokens * 0.8
 
 suffix = '_output'
 command_file_name = 'command_for_general.txt'
@@ -87,40 +88,47 @@ def count_tokens(string: str, encoding_name: str) -> int:
     num_tokens = len(encoding.encode(string))
     return num_tokens
 
+def write_res_to_file(res, cur_chunk_tokens):
+    if res:
+        # cur_chunk_total_tokens = cur_chunk__prompt_token = cur_chunks_completion_tokens = 0
+        # chunks_tokens.total_tokens, chunks_tokens.prompt_tokens, chunks_tokens.completion_tokens = add_sum_used_tokens(
+        #     res.usage.total_tokens,
+        #     res.usage.prompt_tokens,
+        #     res.usage.completion_tokens)
+        res_content = res.choices[0].message.content
+        cur_chunk_tokens.completion_tokens = res.usage.completion_tokens
 
-def calculate_used_tokens(total_tokens, prompt_tokens, completion_tokens):
-    total_tokens += total_tokens
-    prompt_tokens += prompt_tokens
-    completion_tokens += completion_tokens
-    return total_tokens, prompt_tokens, completion_tokens
+        print(f'\nResponse of the current paragraph: {cur_chunk_tokens.completion_tokens} tokens.')
+        print(f'Converted: {res_content}\n')
+
+        with open(output_file_path, 'a') as f:
+            f.write(f'{res_content}\n\n')
+        return cur_chunk_tokens
 
 
 def convert_prompt(chunks):
     open(output_file_path, 'w').close()
+    sum_chunks_tokens = Token()
 
     for chunk in tqdm(chunks, desc="Processing", position=-1, leave=True):
-        print(f'\nProcessing paragraph:\n{" ".join(chunk).replace(command, "")}')
+        print(f'\nProcessing paragraph: {" ".join(chunk).replace(command, "")}')
 
-        text_tokens = count_tokens(''.join(chunk).replace(command, ''), encoding_name)
-        print(
-            f'Request of the current paragraph (contains command, {command_tokens} tokens): {command_tokens + text_tokens} tokens.')
         # Init tokens used.
-        total_tokens = prompt_tokens = completion_tokens = 0
+        cur_chunk_tokens = Token()
+        cur_chunk_tokens.text_tokens = count_tokens(''.join(chunk).replace(command, ''), encoding_name)
+        cur_chunk_tokens.command_tokens = command_tokens
+        cur_chunk_tokens.prompt_tokens = command_tokens + cur_chunk_tokens.text_tokens
+
+        print(f'Request of the current paragraph (contains command, {cur_chunk_tokens.command_tokens} tokens): {cur_chunk_tokens.prompt_tokens} tokens.')
 
         res = send_request(''.join(chunk))
-        if res:
-            total_tokens, prompt_tokens, completion_tokens = calculate_used_tokens(res.usage.total_tokens,
-                                                                                   res.usage.prompt_tokens,
-                                                                                   res.usage.completion_tokens)
-            res_content = res.choices[0].message.content
+        cur_chunk_tokens = write_res_to_file(res, cur_chunk_tokens)
+        sum_chunks_tokens.add_sum(cur_chunk_tokens)
 
-            print(f'Response of the current paragraph: {completion_tokens} tokens.')
-            print(f'Converted: {res_content}\n')
-
-            with open(output_file_path, 'a') as f:
-                f.write(f'{res_content}\n\n')
-
-    print(f'Total tokens: {total_tokens}, Prompt Tokens: {prompt_tokens}, Completion Tokens: {completion_tokens}')
+    print(
+        f'Total tokens: {sum_chunks_tokens.total_tokens}, '
+        f'Prompt Tokens: {sum_chunks_tokens.prompt_tokens}, '
+        f'Completion Tokens: {sum_chunks_tokens.completion_tokens}')
 
 
 def contain_english(text):
