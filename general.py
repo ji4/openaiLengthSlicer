@@ -2,7 +2,7 @@ import os
 import sys
 import re
 import tiktoken
-from openai import OpenAI
+from openai import OpenAI, OpenAIError
 from dotenv import dotenv_values
 from tqdm import tqdm
 from modules.file_util import concat_filename_ext
@@ -35,8 +35,11 @@ def send_request(content, model=model_name):
         response = client.chat.completions.create(
             model=model,
             messages=[
+                {"role": "system",
+                 "content": 'You are a professional stenographer'},
                 {"role": "user",
-                 "content": f'{content}'}]
+                 "content": f'{content}'}
+            ]
         )
         return response
     except Exception as e:
@@ -115,18 +118,28 @@ def convert_prompt(chunks):
     sum_chunks_tokens = Token()
 
     for chunk in tqdm(chunks, desc="Processing", position=-1, leave=True):
-        print(f'\nProcessing paragraph: {" ".join(chunk).replace(command, "")}')
-        cur_chunk_tokens = init_cur_chunk_token_usage(chunk)
-        print(f'Request of the current paragraph (contains command, {cur_chunk_tokens.command_tokens} tokens): {cur_chunk_tokens.prompt_tokens} tokens.')
+        try:
+            print(f'\nProcessing paragraph: {" ".join(chunk).replace(command, "")}')
+            cur_chunk_tokens = init_cur_chunk_token_usage(chunk)
+            print(f'Request of the current paragraph (contains command, {cur_chunk_tokens.command_tokens} tokens): {cur_chunk_tokens.prompt_tokens} tokens.')
 
-        res = send_request(''.join(chunk))
-        cur_chunk_tokens = write_res_to_file(res, cur_chunk_tokens)
-        sum_chunks_tokens.add_sum(cur_chunk_tokens)
-
-    print(
-        f'Total tokens: {sum_chunks_tokens.total_tokens}, '
-        f'Prompt Tokens: {sum_chunks_tokens.prompt_tokens}, '
-        f'Completion Tokens: {sum_chunks_tokens.completion_tokens}')
+            res = send_request(''.join(chunk))
+            cur_chunk_tokens = write_res_to_file(res, cur_chunk_tokens)
+            sum_chunks_tokens.add_sum(cur_chunk_tokens)
+        except OpenAIError as e:
+            print("OpenAI Error:", e)
+        except IOError as e:
+            print("IO Error:", e)
+        except Exception as e:
+            print("Unexpected error:", e)
+        else:
+            print("Conversion completed successfully!\n")
+            print(
+                f'Total tokens: {sum_chunks_tokens.total_tokens}, '
+                f'Prompt Tokens: {sum_chunks_tokens.prompt_tokens}, '
+                f'Completion Tokens: {sum_chunks_tokens.completion_tokens}')
+        finally:
+            print("Exiting program")
 
 
 def contain_english(text):
