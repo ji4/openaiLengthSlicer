@@ -43,12 +43,12 @@ def send_request(content, model=model_name):
         return None
 
 
-def add_space_for_two_eng_words(i, sentence, sentences):
-    next_index = i+1
-    if next_index < len(sentences): # if the next index exists
-        if contain_english(sentence) and contain_english(sentences[next_index]):
-            sentence += ' '
-    return sentence
+def add_space_for_two_eng_words(i, cur_sentence, sentences):
+    next_index = i + 1
+    if contain_english(cur_sentence) and next_index < len(sentences):  # if the next index exists
+        if contain_english(sentences[next_index]):
+            cur_sentence += ' '
+    return cur_sentence
 
 
 def split_text(input_text):
