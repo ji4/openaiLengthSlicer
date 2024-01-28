@@ -11,12 +11,13 @@ from modules.token_usage import Token
 
 model_name = "gpt-3.5-turbo-1106"
 encoding_name = "cl100k_base"
-# max_tokens = 4096
-# room_for_punctuation = 500
-# max_prompt_tokens = max_tokens - room_for_punctuation
-max_tokens = 100
-max_prompt_tokens = max_tokens * 0.8
 system_content = 'You are a professional stenographer.'
+
+max_tokens = 4096
+room_for_punctuation = 500
+max_prompt_tokens = max_tokens - room_for_punctuation
+# max_tokens = 100 max_tokens * 0.8
+# max_prompt_tokens =
 
 suffix = '_output'
 command_file_name = 'command_for_general.txt'
@@ -100,7 +101,7 @@ def write_res_to_file(res, cur_chunk_tokens):
         cur_chunk_tokens.total_tokens = res.usage.total_tokens
         cur_chunk_tokens.prompt_tokens = res.usage.prompt_tokens
 
-        print(f'\nActual Request of the current paragraph: {cur_chunk_tokens.prompt_tokens} tokens.')
+        print(f'\nActual Request of the current paragraph:{cur_chunk_tokens.prompt_tokens} tokens.')
         print_full_line('.')
         print(f'Response of the current paragraph: {cur_chunk_tokens.completion_tokens} tokens.')
         print(f'Converted: {res_content}\n')
@@ -135,7 +136,8 @@ def convert_prompt(chunks):
             cur_chunk_tokens = init_cur_chunk_token_usage(chunk)
             print()
             print(
-                f'Request of the current paragraph, prompt(roughly estimated): {cur_chunk_tokens.prompt_tokens} tokens (command: {cur_chunk_tokens.command_tokens} tokens , text: {cur_chunk_tokens.text_tokens} tokens, others: {cur_chunk_tokens.prompt_tokens - cur_chunk_tokens.command_tokens - cur_chunk_tokens.text_tokens} tokens.')
+                f'Request of the current paragraph, prompt(roughly estimated):'
+                f'{cur_chunk_tokens.prompt_tokens} tokens (command: {cur_chunk_tokens.command_tokens} tokens , text: {cur_chunk_tokens.text_tokens} tokens, others: {cur_chunk_tokens.prompt_tokens - cur_chunk_tokens.command_tokens - cur_chunk_tokens.text_tokens} tokens.')
             print(f'Processing paragraph: {" ".join(chunk).replace(command, "")}')
 
             res = send_request(''.join(chunk))
@@ -151,14 +153,14 @@ def convert_prompt(chunks):
         print("Conversion completed successfully!\n")
     finally:
         print_full_line('=')
-        print('[Sum]')
+        print('[Sum Usage]')
         print(
             f'Total tokens: {sum_chunks_tokens.total_tokens}, '
             f'Prompt Tokens: {sum_chunks_tokens.prompt_tokens}, '
             f'Completion Tokens: {sum_chunks_tokens.completion_tokens}')
 
         print(sum_chunks_tokens.print_cost())
-        print("Exiting program")
+        print(f'Output file: {output_file_path}')
 
 
 def contain_english(text):
