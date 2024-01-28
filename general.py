@@ -44,8 +44,9 @@ def send_request(content, model=model_name):
 
 
 def add_space_for_two_eng_words(i, sentence, sentences):
-    if i != 0:
-        if contain_english(sentence) and contain_english(sentences[-1]):
+    next_index = i+1
+    if next_index < len(sentences): # if the next index exists
+        if contain_english(sentence) and contain_english(sentences[next_index]):
             sentence += ' '
     return sentence
 
@@ -148,6 +149,7 @@ if __name__ == "__main__":
 
     # 切割文字
     chunks = split_text(input_text)
+    # print(f'chunks: {chunks}')
 
     # Convert prompt
     convert_prompt(chunks)
