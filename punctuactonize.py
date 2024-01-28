@@ -8,6 +8,7 @@ from dotenv import dotenv_values
 from tqdm import tqdm
 from modules.file_util import concat_filename_ext
 from modules.token_usage import Token
+from modules.color import Color
 
 model_name = "gpt-3.5-turbo-1106"
 encoding_name = "cl100k_base"
@@ -101,10 +102,11 @@ def write_res_to_file(res, cur_chunk_tokens):
         cur_chunk_tokens.total_tokens = res.usage.total_tokens
         cur_chunk_tokens.prompt_tokens = res.usage.prompt_tokens
 
-        tqdm.write(f'\nActual Request of the current paragraph: {cur_chunk_tokens.prompt_tokens} tokens.\n')
+        tqdm.write(f'\nActual Request of the current paragraph: {cur_chunk_tokens.prompt_tokens} tokens.\n ')
         print_full_line('.')
-        tqdm.write(f'\n[Response of the of paragraph] {cur_chunk_tokens.completion_tokens} tokens.')
-        tqdm.write(f'Converted: {res_content}\n')
+        tqdm.write(f'{Color.BLUE}[Response of the of paragraph]{Color.RESET}\n'
+                   f'{cur_chunk_tokens.completion_tokens} tokens.')
+        tqdm.write(f'Converted: {Color.GREEN}{res_content}{Color.RESET}\n')
         print_full_line('.')
 
         with open(output_file_path, 'a') as f:
@@ -130,15 +132,16 @@ def convert_prompt(chunks):
         for chunk in tqdm(chunks, desc="Processing"):
             cur_chunk_tokens = init_cur_chunk_token_usage(chunk)
             tqdm.write(
-                f'[Request of the current paragraph]\n'
+                f'{Color.BLUE}[Request of the current paragraph]{Color.RESET}\n'
                 f'prompt(roughly estimated): {cur_chunk_tokens.prompt_tokens} tokens\n(command: {cur_chunk_tokens.command_tokens} tokens , text: {cur_chunk_tokens.text_tokens} tokens, others: {cur_chunk_tokens.prompt_tokens - cur_chunk_tokens.command_tokens - cur_chunk_tokens.text_tokens} tokens.\n')
-            tqdm.write(f'Processing paragraph: {" ".join(chunk).replace(command, "")}')
+            tqdm.write(f'Processing paragraph: {Color.GREEN}{" ".join(chunk).replace(command, "")}{Color.RESET}')
 
             res = send_request(''.join(chunk))
             cur_chunk_tokens = write_res_to_file(res, cur_chunk_tokens)
             sum_chunks_tokens.add_sum(cur_chunk_tokens)
 
-            tqdm.write('\n[Accumulated Usage So Far]')
+            tqdm.write(f'{Color.BLUE}[Accumulated Usage So Far]{Color.RESET}')
+            sum_chunks_tokens.print_token_usage()
             sum_chunks_tokens.print_cost()
             tqdm.write('\n')
             print_full_line('=')
@@ -153,11 +156,8 @@ def convert_prompt(chunks):
     finally:
         print_full_line('=')
         tqdm.write('[Sum Usage]')
-        tqdm.write(
-            f'Total tokens: {sum_chunks_tokens.total_tokens}, '
-            f'Prompt Tokens: {sum_chunks_tokens.prompt_tokens}, '
-            f'Completion Tokens: {sum_chunks_tokens.completion_tokens}')
 
+        sum_chunks_tokens.print_token_usage()
         tqdm.write(sum_chunks_tokens.print_cost())
         tqdm.write(f'Output file: {output_file_path}')
 

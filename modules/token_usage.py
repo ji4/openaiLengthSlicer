@@ -22,6 +22,11 @@ class Token:
         self.prompt_tokens += token.prompt_tokens
         self.completion_tokens += token.completion_tokens
 
+    def print_token_usage(self):
+        tqdm.write(
+            f'Total tokens: {self.total_tokens}, '
+            f'Prompt Tokens: {self.prompt_tokens}, '
+            f'Completion Tokens: {self.completion_tokens}')
     def print_cost(self):
         prompt_cost = self.prompt_tokens / self.unit_of_tokens_charged * self.prompt_price * self.exchange_rate_of_US_to_NT
         completion_cost = self.completion_tokens / self.unit_of_tokens_charged * self.completion_price * self.exchange_rate_of_US_to_NT
