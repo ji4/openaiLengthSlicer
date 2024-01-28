@@ -13,11 +13,11 @@ model_name = "gpt-3.5-turbo-1106"
 encoding_name = "cl100k_base"
 system_content = 'You are a professional stenographer.'
 
-max_tokens = 4096
-room_for_punctuation = 500
-max_prompt_tokens = max_tokens - room_for_punctuation
-# max_tokens = 100 max_tokens * 0.8
-# max_prompt_tokens =
+# max_tokens = 4096
+# room_for_punctuation = 500
+# max_prompt_tokens = max_tokens - room_for_punctuation
+max_tokens = 100
+max_prompt_tokens = max_tokens * 0.8
 
 suffix = '_output'
 command_file_name = 'command_for_general.txt'
@@ -46,7 +46,7 @@ def send_request(content, model=model_name):
         )
         return response
     except Exception as e:
-        print("Error during conversation:", e)
+        tqdm.write("Error during conversation:", e)
         return None
 
 
@@ -101,15 +101,11 @@ def write_res_to_file(res, cur_chunk_tokens):
         cur_chunk_tokens.total_tokens = res.usage.total_tokens
         cur_chunk_tokens.prompt_tokens = res.usage.prompt_tokens
 
-        print(f'\nActual Request of the current paragraph:{cur_chunk_tokens.prompt_tokens} tokens.')
+        tqdm.write(f'\nActual Request of the current paragraph: {cur_chunk_tokens.prompt_tokens} tokens.\n')
         print_full_line('.')
-        print(f'Response of the current paragraph: {cur_chunk_tokens.completion_tokens} tokens.')
-        print(f'Converted: {res_content}\n')
-
-        print('Sum Usage So Far - ', end='')
-        cur_chunk_tokens.print_cost()
-
-        print_full_line('=')
+        tqdm.write(f'\n[Response of theest of thagraph] {cur_chunk_tokens.completion_tokens} tokens.\n')
+        tqdm.write(f'Converted: {res_content}\n')
+        print_full_line('.')
 
         with open(output_file_path, 'a') as f:
             f.write(f'{res_content}\n\n')
@@ -131,36 +127,39 @@ def convert_prompt(chunks):
     print_full_line('=')
 
     try:
-        for chunk in tqdm(chunks, desc="Processing", position=-1, leave=True):
-            print('\n')
+        for chunk in tqdm(chunks, desc="Processing"):
             cur_chunk_tokens = init_cur_chunk_token_usage(chunk)
-            print()
-            print(
-                f'Request of the current paragraph, prompt(roughly estimated):'
-                f'{cur_chunk_tokens.prompt_tokens} tokens (command: {cur_chunk_tokens.command_tokens} tokens , text: {cur_chunk_tokens.text_tokens} tokens, others: {cur_chunk_tokens.prompt_tokens - cur_chunk_tokens.command_tokens - cur_chunk_tokens.text_tokens} tokens.')
-            print(f'Processing paragraph: {" ".join(chunk).replace(command, "")}')
+            tqdm.write(
+                f'\n[Request of the current paragraph]\n\n'
+                f'prompt(roughly estimated): {cur_chunk_tokens.prompt_tokens} tokens (command: {cur_chunk_tokens.command_tokens} tokens , text: {cur_chunk_tokens.text_tokens} tokens, others: {cur_chunk_tokens.prompt_tokens - cur_chunk_tokens.command_tokens - cur_chunk_tokens.text_tokens} tokens.\n')
+            tqdm.write(f'Processing paragraph: {" ".join(chunk).replace(command, "")}')
 
             res = send_request(''.join(chunk))
             cur_chunk_tokens = write_res_to_file(res, cur_chunk_tokens)
             sum_chunks_tokens.add_sum(cur_chunk_tokens)
+
+            tqdm.write('\n[Sum Usage Till Now]\n')
+            sum_chunks_tokens.print_cost()
+            tqdm.write('\n')
+            print_full_line('=')
     except OpenAIError as e:
-        print("OpenAI Error:", e)
+        tqdm.write("OpenAI Error:", e)
     except IOError as e:
-        print("IO Error:", e)
+        tqdm.write("IO Error:", e)
     except Exception as e:
-        print("Unexpected error:", e)
+        tqdm.write("Unexpected error:", e)
     else:
-        print("Conversion completed successfully!\n")
+        tqdm.write("Conversion completed successfully!\n")
     finally:
         print_full_line('=')
-        print('[Sum Usage]')
-        print(
+        tqdm.write('[Sum Usage]')
+        tqdm.write(
             f'Total tokens: {sum_chunks_tokens.total_tokens}, '
             f'Prompt Tokens: {sum_chunks_tokens.prompt_tokens}, '
             f'Completion Tokens: {sum_chunks_tokens.completion_tokens}')
 
-        print(sum_chunks_tokens.print_cost())
-        print(f'Output file: {output_file_path}')
+        tqdm.write(sum_chunks_tokens.print_cost())
+        tqdm.write(f'Output file: {output_file_path}')
 
 
 def contain_english(text):
@@ -171,7 +170,7 @@ def print_full_line(str_character):
     terminal_width, _ = shutil.get_terminal_size()
 
     # 使用 ANSI 转义码输出水平线
-    print(str_character * terminal_width)
+    tqdm.write(str_character * terminal_width)
 
 
 if __name__ == "__main__":

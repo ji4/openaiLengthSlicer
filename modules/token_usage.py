@@ -1,3 +1,5 @@
+from tqdm import tqdm
+
 class Token:
     def __init__(self):
         self.total_tokens = 0
@@ -25,8 +27,8 @@ class Token:
         completion_cost = self.completion_tokens / self.unit_of_tokens_charged * self.completion_price * self.exchange_rate_of_US_to_NT
         total_cost = prompt_cost + completion_cost
 
-        print(
+        tqdm.write(
             f'Total Cost: ${round(total_cost, self.ndigits)}, '
-            f'Prompt cost: ${round(prompt_cost, self.ndigits)}, '
+            f'Prompt Cost: ${round(prompt_cost, self.ndigits)}, '
             f'Completion Cost: ${round(completion_cost, self.ndigits)} '
             f'NT dollars (USD:TWD=1:30)')
