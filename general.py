@@ -10,11 +10,11 @@ from modules.token_usage import Token
 
 model_name = "gpt-3.5-turbo-1106"
 encoding_name = "cl100k_base"
-# max_tokens = 4096
-# room_for_punctuation = 500
-# max_prompt_tokens = max_tokens - room_for_punctuation
-max_tokens = 100
-max_prompt_tokens = max_tokens * 0.8
+max_tokens = 4096
+room_for_punctuation = 500
+max_prompt_tokens = max_tokens - room_for_punctuation
+# max_tokens = 100
+# max_prompt_tokens = max_tokens * 0.8
 
 suffix = '_output'
 command_file_name = 'command_for_general.txt'
@@ -73,7 +73,7 @@ def split_text(input_text):
         if current_chunk_tokens + sentence_tokens <= max_prompt_tokens:
             current_chunk.append(sentence)  # 將sentence塞進chunk
             current_chunk_tokens += sentence_tokens  # 將目前句子token累計至當前chunk的token
-            if sentence == sentences[-1]:
+            if sentence == sentences[-1]:  # 只有一個chunk
                 chunks.append(current_chunk)  # 加入目前chunk至array
         else:
             print(f'sentence in else: {sentence}')
@@ -91,10 +91,12 @@ def count_tokens(string: str, encoding_name: str) -> int:
     num_tokens = len(encoding.encode(string))
     return num_tokens
 
+
 def write_res_to_file(res, cur_chunk_tokens):
     if res:
         res_content = res.choices[0].message.content
         cur_chunk_tokens.completion_tokens = res.usage.completion_tokens
+        cur_chunk_tokens.total_tokens = res.usage.total_tokens
 
         print(f'\nResponse of the current paragraph: {cur_chunk_tokens.completion_tokens} tokens.')
         print(f'Converted: {res_content}\n')
@@ -117,29 +119,30 @@ def convert_prompt(chunks):
     open(output_file_path, 'w').close()
     sum_chunks_tokens = Token()
 
-    for chunk in tqdm(chunks, desc="Processing", position=-1, leave=True):
-        try:
+    try:
+        for chunk in tqdm(chunks, desc="Processing", position=-1, leave=True):
             print(f'\nProcessing paragraph: {" ".join(chunk).replace(command, "")}')
             cur_chunk_tokens = init_cur_chunk_token_usage(chunk)
-            print(f'Request of the current paragraph (contains command, {cur_chunk_tokens.command_tokens} tokens): {cur_chunk_tokens.prompt_tokens} tokens.')
+            print(
+                f'Request of the current paragraph (contains command, {cur_chunk_tokens.command_tokens} tokens): {cur_chunk_tokens.prompt_tokens} tokens.')
 
             res = send_request(''.join(chunk))
             cur_chunk_tokens = write_res_to_file(res, cur_chunk_tokens)
             sum_chunks_tokens.add_sum(cur_chunk_tokens)
-        except OpenAIError as e:
-            print("OpenAI Error:", e)
-        except IOError as e:
-            print("IO Error:", e)
-        except Exception as e:
-            print("Unexpected error:", e)
-        else:
-            print("Conversion completed successfully!\n")
-            print(
-                f'Total tokens: {sum_chunks_tokens.total_tokens}, '
-                f'Prompt Tokens: {sum_chunks_tokens.prompt_tokens}, '
-                f'Completion Tokens: {sum_chunks_tokens.completion_tokens}')
-        finally:
-            print("Exiting program")
+    except OpenAIError as e:
+        print("OpenAI Error:", e)
+    except IOError as e:
+        print("IO Error:", e)
+    except Exception as e:
+        print("Unexpected error:", e)
+    else:
+        print("Conversion completed successfully!\n")
+    finally:
+        print(
+            f'Total tokens: {sum_chunks_tokens.total_tokens}, '
+            f'Prompt Tokens: {sum_chunks_tokens.prompt_tokens}, '
+            f'Completion Tokens: {sum_chunks_tokens.completion_tokens}')
+        print("Exiting program")
 
 
 def contain_english(text):
@@ -168,7 +171,6 @@ if __name__ == "__main__":
 
     # 切割文字
     chunks = split_text(input_text)
-    # print(f'chunks: {chunks}')
 
     # Convert prompt
     convert_prompt(chunks)
