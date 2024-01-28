@@ -10,11 +10,12 @@ from modules.token_usage import Token
 
 model_name = "gpt-3.5-turbo-1106"
 encoding_name = "cl100k_base"
-max_tokens = 4096
-room_for_punctuation = 500
-max_prompt_tokens = max_tokens - room_for_punctuation
-# max_tokens = 100
-# max_prompt_tokens = max_tokens * 0.8
+# max_tokens = 4096
+# room_for_punctuation = 500
+# max_prompt_tokens = max_tokens - room_for_punctuation
+max_tokens = 100
+max_prompt_tokens = max_tokens * 0.8
+system_content = 'You are a professional stenographer.'
 
 suffix = '_output'
 command_file_name = 'command_for_general.txt'
@@ -36,7 +37,7 @@ def send_request(content, model=model_name):
             model=model,
             messages=[
                 {"role": "system",
-                 "content": 'You are a professional stenographer'},
+                 "content": f'{system_content}'},
                 {"role": "user",
                  "content": f'{content}'}
             ]
@@ -76,7 +77,6 @@ def split_text(input_text):
             if sentence == sentences[-1]:  # 只有一個chunk
                 chunks.append(current_chunk)  # 加入目前chunk至array
         else:
-            print(f'sentence in else: {sentence}')
             chunks.append(current_chunk)
             # Empty current chunk for new storage.
             current_chunk = [command, sentence]
@@ -97,8 +97,10 @@ def write_res_to_file(res, cur_chunk_tokens):
         res_content = res.choices[0].message.content
         cur_chunk_tokens.completion_tokens = res.usage.completion_tokens
         cur_chunk_tokens.total_tokens = res.usage.total_tokens
+        cur_chunk_tokens.prompt_tokens = res.usage.prompt_tokens
 
-        print(f'\nResponse of the current paragraph: {cur_chunk_tokens.completion_tokens} tokens.')
+        print(f'\nActual Request of the current paragraph: {cur_chunk_tokens.prompt_tokens} tokens.')
+        print(f'Response of the current paragraph: {cur_chunk_tokens.completion_tokens} tokens.')
         print(f'Converted: {res_content}\n')
 
         with open(output_file_path, 'a') as f:
@@ -110,10 +112,9 @@ def init_cur_chunk_token_usage(chunk):
     cur_chunk_tokens = Token()
     cur_chunk_tokens.text_tokens = count_tokens(''.join(chunk).replace(command, ''), encoding_name)
     cur_chunk_tokens.command_tokens = command_tokens
-    cur_chunk_tokens.prompt_tokens = command_tokens + cur_chunk_tokens.text_tokens
+    cur_chunk_tokens.prompt_tokens = command_tokens + count_tokens(system_content, encoding_name) + cur_chunk_tokens.text_tokens
 
     return cur_chunk_tokens
-
 
 def convert_prompt(chunks):
     open(output_file_path, 'w').close()
@@ -121,10 +122,11 @@ def convert_prompt(chunks):
 
     try:
         for chunk in tqdm(chunks, desc="Processing", position=-1, leave=True):
-            print(f'\nProcessing paragraph: {" ".join(chunk).replace(command, "")}')
+            print('\n')
             cur_chunk_tokens = init_cur_chunk_token_usage(chunk)
             print(
-                f'Request of the current paragraph (contains command, {cur_chunk_tokens.command_tokens} tokens): {cur_chunk_tokens.prompt_tokens} tokens.')
+                f'Request of the current paragraph, prompt(roughly estimated): {cur_chunk_tokens.prompt_tokens} tokens (command: {cur_chunk_tokens.command_tokens} tokens , text: {cur_chunk_tokens.text_tokens} tokens, others: {cur_chunk_tokens.prompt_tokens - cur_chunk_tokens.command_tokens - cur_chunk_tokens.text_tokens} tokens.')
+            print(f'Processing paragraph: {" ".join(chunk).replace(command, "")}')
 
             res = send_request(''.join(chunk))
             cur_chunk_tokens = write_res_to_file(res, cur_chunk_tokens)
