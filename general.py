@@ -101,11 +101,11 @@ def write_res_to_file(res, cur_chunk_tokens):
         cur_chunk_tokens.prompt_tokens = res.usage.prompt_tokens
 
         print(f'\nActual Request of the current paragraph: {cur_chunk_tokens.prompt_tokens} tokens.')
-        print_full_line('-')
+        print_full_line('.')
         print(f'Response of the current paragraph: {cur_chunk_tokens.completion_tokens} tokens.')
         print(f'Converted: {res_content}\n')
 
-        print('Current Sum Usage - ', end='')
+        print('Sum Usage So Far - ', end='')
         cur_chunk_tokens.print_cost()
 
         print_full_line('=')
