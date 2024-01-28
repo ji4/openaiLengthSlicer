@@ -2,6 +2,7 @@ import os
 import sys
 import re
 import tiktoken
+import shutil
 from openai import OpenAI, OpenAIError
 from dotenv import dotenv_values
 from tqdm import tqdm
@@ -100,8 +101,11 @@ def write_res_to_file(res, cur_chunk_tokens):
         cur_chunk_tokens.prompt_tokens = res.usage.prompt_tokens
 
         print(f'\nActual Request of the current paragraph: {cur_chunk_tokens.prompt_tokens} tokens.')
+        print_full_line('-')
         print(f'Response of the current paragraph: {cur_chunk_tokens.completion_tokens} tokens.')
         print(f'Converted: {res_content}\n')
+
+        print_full_line('=')
 
         with open(output_file_path, 'a') as f:
             f.write(f'{res_content}\n\n')
@@ -120,10 +124,13 @@ def convert_prompt(chunks):
     open(output_file_path, 'w').close()
     sum_chunks_tokens = Token()
 
+    print_full_line('=')
+
     try:
         for chunk in tqdm(chunks, desc="Processing", position=-1, leave=True):
             print('\n')
             cur_chunk_tokens = init_cur_chunk_token_usage(chunk)
+            print()
             print(
                 f'Request of the current paragraph, prompt(roughly estimated): {cur_chunk_tokens.prompt_tokens} tokens (command: {cur_chunk_tokens.command_tokens} tokens , text: {cur_chunk_tokens.text_tokens} tokens, others: {cur_chunk_tokens.prompt_tokens - cur_chunk_tokens.command_tokens - cur_chunk_tokens.text_tokens} tokens.')
             print(f'Processing paragraph: {" ".join(chunk).replace(command, "")}')
@@ -144,11 +151,20 @@ def convert_prompt(chunks):
             f'Total tokens: {sum_chunks_tokens.total_tokens}, '
             f'Prompt Tokens: {sum_chunks_tokens.prompt_tokens}, '
             f'Completion Tokens: {sum_chunks_tokens.completion_tokens}')
+
+        print(sum_chunks_tokens.print_cost())
         print("Exiting program")
 
 
 def contain_english(text):
     return bool(re.search('[a-zA-Z]', text))
+
+def print_full_line(str_character):
+    # 获取终端的宽度
+    terminal_width, _ = shutil.get_terminal_size()
+
+    # 使用 ANSI 转义码输出水平线
+    print(str_character * terminal_width)
 
 
 if __name__ == "__main__":
