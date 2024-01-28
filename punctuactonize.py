@@ -159,7 +159,8 @@ def convert_prompt(chunks):
 
         sum_chunks_tokens.print_token_usage()
         sum_chunks_tokens.print_cost()
-        tqdm.write(f'Output file: {output_file_path}')
+        print_full_line('=')
+        tqdm.write(f'{Color.BG_GREY}{Color.BLACK}Output file:{Color.RESET} {output_file_path}')
         print_full_line('=')
 
 
