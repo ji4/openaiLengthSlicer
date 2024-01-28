@@ -105,6 +105,9 @@ def write_res_to_file(res, cur_chunk_tokens):
         print(f'Response of the current paragraph: {cur_chunk_tokens.completion_tokens} tokens.')
         print(f'Converted: {res_content}\n')
 
+        print('Current Sum Usage - ', end='')
+        cur_chunk_tokens.print_cost()
+
         print_full_line('=')
 
         with open(output_file_path, 'a') as f:
@@ -147,6 +150,8 @@ def convert_prompt(chunks):
     else:
         print("Conversion completed successfully!\n")
     finally:
+        print_full_line('=')
+        print('[Sum]')
         print(
             f'Total tokens: {sum_chunks_tokens.total_tokens}, '
             f'Prompt Tokens: {sum_chunks_tokens.prompt_tokens}, '
