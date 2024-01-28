@@ -103,7 +103,7 @@ def write_res_to_file(res, cur_chunk_tokens):
 
         tqdm.write(f'\nActual Request of the current paragraph: {cur_chunk_tokens.prompt_tokens} tokens.\n')
         print_full_line('.')
-        tqdm.write(f'\n[Response of theest of thagraph] {cur_chunk_tokens.completion_tokens} tokens.\n')
+        tqdm.write(f'\n[Response of the of paragraph] {cur_chunk_tokens.completion_tokens} tokens.')
         tqdm.write(f'Converted: {res_content}\n')
         print_full_line('.')
 
@@ -130,15 +130,15 @@ def convert_prompt(chunks):
         for chunk in tqdm(chunks, desc="Processing"):
             cur_chunk_tokens = init_cur_chunk_token_usage(chunk)
             tqdm.write(
-                f'\n[Request of the current paragraph]\n\n'
-                f'prompt(roughly estimated): {cur_chunk_tokens.prompt_tokens} tokens (command: {cur_chunk_tokens.command_tokens} tokens , text: {cur_chunk_tokens.text_tokens} tokens, others: {cur_chunk_tokens.prompt_tokens - cur_chunk_tokens.command_tokens - cur_chunk_tokens.text_tokens} tokens.\n')
+                f'[Request of the current paragraph]\n'
+                f'prompt(roughly estimated): {cur_chunk_tokens.prompt_tokens} tokens\n(command: {cur_chunk_tokens.command_tokens} tokens , text: {cur_chunk_tokens.text_tokens} tokens, others: {cur_chunk_tokens.prompt_tokens - cur_chunk_tokens.command_tokens - cur_chunk_tokens.text_tokens} tokens.\n')
             tqdm.write(f'Processing paragraph: {" ".join(chunk).replace(command, "")}')
 
             res = send_request(''.join(chunk))
             cur_chunk_tokens = write_res_to_file(res, cur_chunk_tokens)
             sum_chunks_tokens.add_sum(cur_chunk_tokens)
 
-            tqdm.write('\n[Sum Usage Till Now]\n')
+            tqdm.write('\n[Accumulated Usage So Far]')
             sum_chunks_tokens.print_cost()
             tqdm.write('\n')
             print_full_line('=')
