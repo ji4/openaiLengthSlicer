@@ -18,7 +18,7 @@ max_tokens = 4096
 room_for_punctuation = 300
 max_prompt_tokens = max_tokens/2 - room_for_punctuation
 
-#For Test
+# For Test
 # max_tokens = 200
 # max_prompt_tokens = max_tokens * 0.6
 
