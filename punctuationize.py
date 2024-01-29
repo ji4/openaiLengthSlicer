@@ -18,12 +18,12 @@ max_tokens = 4096
 room_for_punctuation = 300
 max_prompt_tokens = max_tokens/2 - room_for_punctuation
 
-# For Test
 # max_tokens = 200
 # max_prompt_tokens = max_tokens * 0.6
+#For Test
 
 suffix = '_output'
-command_file_name = 'command_for_general.txt'
+command_file_name = 'command_for_punctuationize.txt'
 
 # Get absolute path of main program.
 main_program_path = os.path.dirname(os.path.abspath(__file__))
