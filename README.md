@@ -74,5 +74,5 @@ ChatCompletion(
 ![Sometimes OpenAI Echos My Question.png](images%2FSometimes%20OpenAI%20Echos%20My%20Question.png)
 
 ### Issue: Actual Tokens of Request is Not Accurately Estimated
-Before sending the request, the tokens calculated is the same as the actual response.
+Before sending the request, the tokens calculated is not the same as the actual response.
 ![Actual Tokens of Request is Not Accurately Estimated.png](images%2FActual%20Tokens%20of%20Request%20is%20Not%20Accurately%20Estimated.png)
