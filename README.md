@@ -70,7 +70,7 @@ ChatCompletion(
   )),
 );
 ```
-### Sometimes OpenAI Echos My Question
+### Issue: Sometimes OpenAI Echos My Question
 ![Sometimes OpenAI Echos My Question.png](images%2FSometimes%20OpenAI%20Echos%20My%20Question.png)
 
 ### Issue: Actual Tokens of Request is Not Accurately Estimated
