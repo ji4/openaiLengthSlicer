@@ -21,6 +21,7 @@ max_prompt_tokens = max_tokens/2 - room_for_punctuation
 # For Test
 # max_tokens = 200
 # max_prompt_tokens = max_tokens * 0.6
+# max_prompt_tokens = 500
 
 suffix = '_output'
 command_file_name = 'command_for_punctuationize.txt'
@@ -63,7 +64,7 @@ def add_space_for_two_eng_words(i, cur_sentence, sentences):
 
 def split_text(input_text):
     # 將文字按照換行、空白進行切割。
-    sentences = [sentence.strip() for sentence in re.split(r'\n|\s', input_text) if sentence.strip()]
+    sentences = [sentence.strip() + ' ' for sentence in re.split(r'\n|\s', input_text) if sentence.strip()]
 
     # 初始化變數
     chunks = []
@@ -74,7 +75,7 @@ def split_text(input_text):
     for i, sentence in enumerate(sentences):
         sentence_tokens = count_tokens(sentence, encoding_name)
 
-        sentence = add_space_for_two_eng_words(i, sentence, sentences)
+        # sentence = add_space_for_two_eng_words(i, sentence, sentences)
 
         if current_chunk_tokens + sentence_tokens <= max_prompt_tokens:
             current_chunk.append(sentence)  # 將sentence塞進chunk
