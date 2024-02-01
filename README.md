@@ -28,6 +28,7 @@ Current version (v1.1.0)
 ![Flow_v1_1_0_revised.jpg](images%2FFlow_v1_1_0_revised.jpg)
 
 # Known Issues 
+The following issues come out occasionally, not all the time.  
 **punctuationize.py**
 ### Issue: Extra Content Added in Response (Sometimes)
 There is no use to add `無需添加其他任何文字` in the `command_for_punctuationize.txt` file.
