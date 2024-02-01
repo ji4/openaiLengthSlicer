@@ -25,7 +25,7 @@ pip install tiktoken
 
 # Logic of Flow (punctuationize.py)
 Current version (v1.1.0)
-![Flow_v1_1_0_revised.jpg](images%2FFlow_v1_1_0_revised.jpg)
+![Flow_v1_1_0.jpg](images%2FFlow_v1_1_0.jpg)
 
 # Known Issues 
 The following issues come out occasionally, not all the time.  
