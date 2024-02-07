@@ -12,8 +12,8 @@ class Token:
 
         # charge cost
         self.unit_of_tokens_charged = 1000
-        self.prompt_price = 0.0001
-        self.completion_price = 0.0002
+        self.prompt_price = 0.001
+        self.completion_price = 0.002
         self.exchange_rate_of_US_to_NT = 30
         self.ndigits = 5
 
