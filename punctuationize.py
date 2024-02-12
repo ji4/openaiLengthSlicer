@@ -37,7 +37,7 @@ client = OpenAI(api_key=config["API_KEY"])
 prompt_path = os.path.join(main_program_path, command_file_name)
 
 
-def send_request(content, model=model_name):
+def send_request(prompt, model=model_name):
     try:
         response = client.chat.completions.create(
             model=model,
@@ -45,7 +45,7 @@ def send_request(content, model=model_name):
                 {"role": "system",
                  "content": f'{system_content}'},
                 {"role": "user",
-                 "content": f'{content}'}
+                 "content": f'{prompt}'}
             ]
         )
         return response
